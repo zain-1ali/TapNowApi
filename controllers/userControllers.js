@@ -3,36 +3,37 @@ import { catchAsyncError } from "../middlewares/catchAsyncError.js";
 import userModal from "../models/userModal.js";
 import ErrorHandler from "../utils/errorHandle.js";
 
-// export const createSelfProfile = catchAsyncError(async (req, res, next) => {
+export const createSelfProfile = catchAsyncError(async (req, res, next) => {
+  const userId = req.userId;
 
-//   const userId = req.userId;
+  const parentUser = await userModal.findOne({ _id: userId });
 
-//   const parentUser = await userModal.findOne({ _id: userId });
+  if (!parentUser) {
+    next(
+      new ErrorHandler("Unable to create profile as parent user not found", 200)
+    );
+  } else {
+    const newSelfProfile = await userModal.create({
+      name: parentUser.name,
+      parentId: parentUser._id.toString(),
+      infoEmail: parentUser?.email,
+      profileType: "adminSelf",
+      password: "123456",
+    });
 
-//   if (!parentUser) {
-//     next(
-//       new ErrorHandler("Unable to create profile as parent user not found", 200)
-//     );
-//   } else {
-//     const newSelfProfile = await userModal.create({
-//       name: parentUser.name,
-//       parentId: parentUser._id.toString(),
-//     });
+    let theusername = parentUser.userName + newSelfProfile._id.toString();
 
-//     let theusername = parentUser.userName + newSelfProfile._id.toString();
+    let selfProfile = await userModal.findByIdAndUpdate(
+      { _id: newSelfProfile._id },
+      { userName: theusername, password: "" }
+    );
 
-//     let selfProfile = await userModal.findByIdAndUpdate(
-//       { _id: newSelfProfile._id },
-//       { userName: theusername }
-//     );
-
-//     res.status(201).send({
-//       message: "New self profile created successfuly",
-//       success: true,
-//       selfProfile,
-//     });
-//   }
-// });
+    res.status(201).send({
+      message: "New self profile created successfuly",
+      success: true,
+    });
+  }
+});
 
 export const createTeamProfile = catchAsyncError(async (req, res, next) => {
   //   try {
@@ -76,8 +77,10 @@ export const createTeamProfile = catchAsyncError(async (req, res, next) => {
     name,
     email,
     password,
+    infoEmail: email,
     parentId: parentUser._id,
     profileType: "team",
+    allowLogin: true,
   });
 
   // token
@@ -104,7 +107,7 @@ export const getProfiles = catchAsyncError(async (req, res, next) => {
 
   if (!parentUser) {
     next(
-      new ErrorHandler("Unable to create profile as parent user not found", 200)
+      new ErrorHandler("Unable to find profiles as parent user not found", 200)
     );
   }
 
@@ -335,6 +338,13 @@ export const updateSettings = catchAsyncError(async (req, res, next) => {
     {
       allowTeamLogin,
       organizationName,
+    }
+  );
+
+  const updatedTeam = await userModal.updateMany(
+    { parentId: userId, profileType: "team" },
+    {
+      allowLogin: allowTeamLogin,
     }
   );
 

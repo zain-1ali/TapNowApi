@@ -141,7 +141,6 @@ const userSchema = new mongoose.Schema(
   {
     userName: {
       type: String,
-      required: [true, "User Name Is Required"],
       unique: true,
     },
     name: {
@@ -149,21 +148,23 @@ const userSchema = new mongoose.Schema(
     },
     email: {
       type: String,
-      required: [true, " Email is Required"],
       unique: true,
+      validate: validator.isEmail,
+    },
+    infoEmail: {
+      type: String,
       validate: validator.isEmail,
     },
 
     password: {
       type: String,
-      required: [true, "password is required"],
       minlength: [6, "Password length should be greater than 6 character"],
-      select: true,
+      // select: true,
     },
     profileType: {
       type: String,
       required: [true, "profile type is required"],
-      enum: ["admin", "adminSelf", "team"],
+      // enum: ["admin", "adminSelf", "team"],
     },
     location: {
       type: String,
@@ -203,7 +204,9 @@ const userSchema = new mongoose.Schema(
     },
     allowTeamLogin: {
       type: Boolean,
-      default: true,
+    },
+    allowLogin: {
+      type: Boolean,
     },
     parentId: {
       type: mongoose.Types.ObjectId,

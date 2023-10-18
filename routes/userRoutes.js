@@ -1,6 +1,7 @@
 import express from "express";
 import {
   AddSocialLink,
+  createSelfProfile,
   createTeamProfile,
   getProfiles,
   getSingleProfile,
@@ -19,7 +20,7 @@ import { uploadFile } from "../middlewares/StorageMiddleware.js";
 const router = express.Router();
 
 // createSelfProfile route
-// router.post("/AdminDuplicateProfile", userAuth, createSelfProfile);
+router.post("/createSelfProfile", userAuth, createSelfProfile);
 router.post("/createTeamProfile", userAuth, createTeamProfile);
 
 router.get("/getmyProfiles", userAuth, getProfiles);

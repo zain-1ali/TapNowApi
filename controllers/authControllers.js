@@ -33,8 +33,10 @@ export const registerController = catchAsyncError(async (req, res, next) => {
     userName,
     name,
     email,
+    infoEmail: email,
     password,
     profileType: "admin",
+    allowTeamLogin: true,
   });
 
   // token
@@ -77,6 +79,10 @@ export const loginController = async (req, res, next) => {
   if (!user || !isMatch) {
     // next("Invalid Email or Password");
     return next(new ErrorHandler("Invalid Email or Password", 200));
+  }
+
+  if (user?.allowLogin === false) {
+    return next(new ErrorHandler("Access denied", 200));
   }
 
   // if (!isMatch) {
